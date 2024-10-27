@@ -1,7 +1,4 @@
-
-
 @echo off
-
 
 rem update resources
 python scripts/apply_versions.py
@@ -26,7 +23,10 @@ if %errorlevel% neq 0 (
 rem build executable
 dotnet clean src/UniGetUI.sln -v m -nologo
 dotnet publish src/UniGetUI/UniGetUI.csproj /noLogo /property:Configuration=Release /property:Platform=x64 -v m
-
+if %errorlevel% neq 0 (
+    echo "DotNet publish has failed!"
+    pause
+)
 rem sign code
 
 rmdir /Q /S unigetui_bin
@@ -36,6 +36,7 @@ robocopy src\UniGetUI\bin\x64\Release\net8.0-windows10.0.22621.0\win-x64\publish
 rem pushd src\UniGetUI\bin\x64\Release\net8.0-windows10.0.19041.0\win-x64\publish
 
 %signcommand% "unigetui_bin/UniGetUI.exe" "unigetui_bin/UniGetUI.dll" "unigetui_bin/UniGetUI.*.dll" "unigetui_bin/ExternalLibraries.*.dll"
+
 if %errorlevel% neq 0 (
     echo "Signing has failed!"
     pause
@@ -51,6 +52,9 @@ if exist %INSTALLATOR% (
     del "WingetUI Installer.exe"
     copy "UniGetUI Installer.exe" "WingetUI Installer.exe" 
     pause
+    echo Hash: 
+    pwsh.exe -Command (Get-FileHash '.\UniGetUI Installer.exe').Hash
+    echo .
     "UniGetUI Installer.exe"
 ) else (
     echo "Make installer was skipped, because the installer is missing."
